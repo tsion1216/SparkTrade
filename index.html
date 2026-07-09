@@ -1,0 +1,1971 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spark AH Trading PLC | Alex Ayalew</title>
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome 6 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+      /* ============================================================
+           RESET & BASE
+           ============================================================ */
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        color: #ffffff;
+        overflow-x: hidden;
+        background: #0a0f1f;
+      }
+
+      /* ============================================================
+           3D BACKGROUND
+           ============================================================ */
+      #three-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      /* ============================================================
+           CONTENT WRAPPER
+           ============================================================ */
+      .content {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ============================================================
+           NAVIGATION
+           ============================================================ */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 16px 60px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(10, 15, 31, 0.85);
+        backdrop-filter: blur(12px);
+        z-index: 1000;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .navbar.scrolled {
+        background: rgba(10, 15, 31, 0.96);
+        padding: 12px 60px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+
+      .logo img {
+        height: 40px;
+        width: auto;
+      }
+
+      .logo-text {
+        font-family: "Playfair Display", serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: #d4af37;
+        letter-spacing: 1px;
+      }
+
+      .logo-text span {
+        color: #ffffff;
+        font-weight: 400;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 28px;
+        list-style: none;
+      }
+
+      .nav-links a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        position: relative;
+      }
+
+      .nav-links a::after {
+        content: "";
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 0%;
+        height: 2px;
+        background: #d4af37;
+        transition: width 0.3s ease;
+      }
+
+      .nav-links a:hover {
+        color: #ffffff;
+      }
+
+      .nav-links a:hover::after {
+        width: 100%;
+      }
+
+      .nav-links a.active {
+        color: #d4af37;
+      }
+
+      .nav-links a.active::after {
+        width: 100%;
+        background: #d4af37;
+      }
+
+      .menu-toggle {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        cursor: pointer;
+        background: none;
+        border: none;
+      }
+
+      .menu-toggle span {
+        width: 28px;
+        height: 3px;
+        background: #ffffff;
+        border-radius: 3px;
+        transition: all 0.3s ease;
+      }
+
+      .menu-toggle.active span:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 6px);
+      }
+
+      .menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+      }
+
+      .menu-toggle.active span:nth-child(3) {
+        transform: rotate(-45deg) translate(5px, -6px);
+      }
+
+      /* ============================================================
+           HERO SECTION
+           ============================================================ */
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 120px 60px 80px;
+      }
+
+      .hero-container {
+        display: flex;
+        align-items: center;
+        gap: 60px;
+        max-width: 1200px;
+        width: 100%;
+      }
+
+      .hero-image {
+        flex: 0 0 340px;
+      }
+
+      .hero-image img {
+        width: 340px;
+        height: 340px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(212, 175, 55, 0.4);
+        box-shadow: 0 0 60px rgba(212, 175, 55, 0.15);
+        transition: all 0.4s ease;
+      }
+
+      .hero-image img:hover {
+        transform: scale(1.02);
+        border-color: #d4af37;
+        box-shadow: 0 0 80px rgba(212, 175, 55, 0.3);
+      }
+
+      .hero-content {
+        flex: 1;
+      }
+
+      .hero-content .badge {
+        display: inline-block;
+        background: rgba(212, 175, 55, 0.12);
+        color: #d4af37;
+        padding: 6px 18px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        margin-bottom: 16px;
+        border: 1px solid rgba(212, 175, 55, 0.15);
+        text-transform: uppercase;
+      }
+
+      .hero-content h1 {
+        font-family: "Playfair Display", serif;
+        font-size: 48px;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 8px;
+      }
+
+      .hero-content h1 span {
+        color: #d4af37;
+      }
+
+      .hero-content .tagline {
+        font-size: 22px;
+        font-weight: 300;
+        color: rgba(255, 255, 255, 0.7);
+        font-style: italic;
+        margin-bottom: 8px;
+        border-left: 3px solid #d4af37;
+        padding-left: 20px;
+      }
+
+      .hero-content .title {
+        font-size: 17px;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+        line-height: 1.6;
+      }
+
+      .hero-content .title strong {
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      .hero-buttons {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 28px;
+      }
+
+      .btn-primary {
+        display: inline-block;
+        padding: 14px 36px;
+        background: linear-gradient(135deg, #d4af37, #b8962e);
+        color: #0a0f1f;
+        font-weight: 600;
+        font-size: 15px;
+        border: none;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 40px rgba(212, 175, 55, 0.35);
+      }
+
+      .btn-secondary {
+        display: inline-block;
+        padding: 14px 36px;
+        background: transparent;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 15px;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .btn-secondary:hover {
+        border-color: #d4af37;
+        color: #d4af37;
+        transform: translateY(-3px);
+      }
+
+      .hero-social {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .hero-social .social-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.3);
+        font-weight: 400;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .hero-social .social-divider {
+        width: 30px;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .social-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 18px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .social-icon:hover {
+        transform: translateY(-3px);
+        color: #ffffff;
+        border-color: rgba(212, 175, 55, 0.3);
+      }
+
+      .social-icon.linkedin:hover {
+        background: #0a66c2;
+        border-color: #0a66c2;
+        box-shadow: 0 8px 25px rgba(10, 102, 194, 0.3);
+      }
+
+      .social-icon.telegram:hover {
+        background: #0088cc;
+        border-color: #0088cc;
+        box-shadow: 0 8px 25px rgba(0, 136, 204, 0.3);
+      }
+
+      .social-icon.facebook:hover {
+        background: #1877f2;
+        border-color: #1877f2;
+        box-shadow: 0 8px 25px rgba(24, 119, 242, 0.3);
+      }
+
+      .social-icon.email:hover {
+        background: #d4af37;
+        border-color: #d4af37;
+        color: #0a0f1f;
+        box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+      }
+
+      /* ============================================================
+           SECTION COMMON STYLES
+           ============================================================ */
+      section {
+        padding: 80px 60px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .section-title {
+        font-family: "Playfair Display", serif;
+        font-size: 38px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      .section-title span {
+        color: #d4af37;
+      }
+
+      .section-subtitle {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 16px;
+        margin-bottom: 50px;
+        font-weight: 300;
+      }
+
+      .section-subtitle::after {
+        content: "";
+        display: block;
+        width: 60px;
+        height: 3px;
+        background: #d4af37;
+        margin: 12px auto 0;
+        border-radius: 3px;
+      }
+
+      /* ============================================================
+           GLASSMORPHISM CARDS
+           ============================================================ */
+      .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        transition: all 0.4s ease;
+      }
+
+      .glass-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(212, 175, 55, 0.15);
+        transform: translateY(-6px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      /* ============================================================
+           ABOUT ALEX
+           ============================================================ */
+      .about-alex-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 50px;
+        align-items: start;
+      }
+
+      .about-alex-text h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 28px;
+        color: #ffffff;
+        margin-bottom: 16px;
+      }
+
+      .about-alex-text h3 span {
+        color: #d4af37;
+      }
+
+      .about-alex-text p {
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.8;
+        font-size: 15px;
+        margin-bottom: 18px;
+      }
+
+      .about-alex-text .highlight {
+        color: #d4af37;
+        font-weight: 600;
+      }
+
+      .about-alex-text .expertise-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .about-alex-text .expertise-tag {
+        background: rgba(212, 175, 55, 0.1);
+        color: #d4af37;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 500;
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .about-alex-text .expertise-tag:hover {
+        background: rgba(212, 175, 55, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .about-alex-image img {
+        width: 100%;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        transition: all 0.4s ease;
+      }
+
+      .about-alex-image img:hover {
+        transform: scale(1.02);
+        border-color: rgba(212, 175, 55, 0.2);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Stats */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 30px;
+      }
+
+      .stat-item {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .stat-item:hover {
+        background: rgba(212, 175, 55, 0.05);
+        border-color: rgba(212, 175, 55, 0.15);
+      }
+
+      .stat-item .number {
+        font-family: "Playfair Display", serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: #d4af37;
+      }
+
+      .stat-item .label {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 4px;
+      }
+
+      /* ============================================================
+           ABOUT SPARK
+           ============================================================ */
+      .about-spark-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 50px;
+        align-items: start;
+      }
+
+      .about-spark-text h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 26px;
+        color: #ffffff;
+        margin-bottom: 16px;
+      }
+
+      .about-spark-text h3 span {
+        color: #d4af37;
+      }
+
+      .about-spark-text p {
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.8;
+        font-size: 15px;
+        margin-bottom: 16px;
+      }
+
+      .about-spark-text .highlight {
+        color: #d4af37;
+        font-weight: 600;
+      }
+
+      .values-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .value-item {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 14px 12px;
+        border-radius: 10px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .value-item:hover {
+        background: rgba(212, 175, 55, 0.05);
+        border-color: rgba(212, 175, 55, 0.15);
+      }
+
+      .value-item .icon {
+        font-size: 28px;
+        color: #d4af37;
+        margin-bottom: 6px;
+      }
+
+      .value-item .label {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 500;
+      }
+
+      .about-spark-gallery {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .about-spark-gallery img {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        transition: all 0.4s ease;
+      }
+
+      .about-spark-gallery img:hover {
+        transform: scale(1.03);
+        border-color: rgba(212, 175, 55, 0.2);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .about-spark-gallery img:first-child {
+        grid-column: span 2;
+        height: 200px;
+      }
+
+      /* ============================================================
+           SERVICES
+           ============================================================ */
+      .services-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+      }
+
+      .service-card {
+        padding: 30px 24px;
+        text-align: center;
+      }
+
+      .service-card .icon {
+        font-size: 40px;
+        color: #d4af37;
+        margin-bottom: 16px;
+      }
+
+      .service-card h4 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 8px;
+      }
+
+      .service-card p {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.5);
+        line-height: 1.6;
+      }
+
+      /* ============================================================
+           TEAM
+           ============================================================ */
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+      }
+
+      .team-card {
+        padding: 24px;
+        text-align: center;
+      }
+
+      .team-card img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid rgba(212, 175, 55, 0.2);
+        margin-bottom: 16px;
+        transition: all 0.4s ease;
+      }
+
+      .team-card:hover img {
+        border-color: #d4af37;
+        box-shadow: 0 0 40px rgba(212, 175, 55, 0.15);
+      }
+
+      .team-card h4 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 4px;
+      }
+
+      .team-card .role {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      /* ============================================================
+           INVESTMENT
+           ============================================================ */
+      .investment-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+
+      .investment-card {
+        padding: 30px 24px;
+        text-align: center;
+      }
+
+      .investment-card .icon {
+        font-size: 40px;
+        color: #d4af37;
+        margin-bottom: 16px;
+      }
+
+      .investment-card h4 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 8px;
+      }
+
+      .investment-card p {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.5);
+        line-height: 1.6;
+      }
+
+      .investment-card .highlight-number {
+        font-family: "Playfair Display", serif;
+        font-size: 24px;
+        color: #d4af37;
+        font-weight: 700;
+        display: block;
+        margin: 8px 0;
+      }
+
+      /* ============================================================
+           CLIENTS
+           ============================================================ */
+      .clients-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        align-items: center;
+        justify-items: center;
+      }
+
+      .client-logo {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 20px;
+        border-radius: 12px;
+        width: 100%;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.4s ease;
+      }
+
+      .client-logo:hover {
+        transform: translateY(-4px);
+        border-color: rgba(212, 175, 55, 0.15);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      .client-logo .placeholder-logo {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 500;
+      }
+
+      .client-logo .placeholder-logo .icon {
+        font-size: 32px;
+        color: rgba(212, 175, 55, 0.3);
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      /* ============================================================
+           CONTACT
+           ============================================================ */
+      .contact-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 50px;
+      }
+
+      .contact-info h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 26px;
+        color: #ffffff;
+        margin-bottom: 16px;
+      }
+
+      .contact-info p {
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.8;
+        margin-bottom: 24px;
+      }
+
+      .contact-detail {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .contact-detail .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(212, 175, 55, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #d4af37;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+
+      .contact-detail .text {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 15px;
+      }
+
+      .contact-detail .text strong {
+        color: #ffffff;
+      }
+
+      .contact-social {
+        display: flex;
+        gap: 14px;
+        margin-top: 20px;
+      }
+
+      .contact-form input,
+      .contact-form textarea {
+        width: 100%;
+        padding: 14px 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        color: #ffffff;
+        font-size: 15px;
+        font-family: "Poppins", sans-serif;
+        transition: all 0.3s ease;
+        margin-bottom: 16px;
+      }
+
+      .contact-form input::placeholder,
+      .contact-form textarea::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+      }
+
+      .contact-form input:focus,
+      .contact-form textarea:focus {
+        outline: none;
+        border-color: #d4af37;
+        background: rgba(255, 255, 255, 0.06);
+        box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.05);
+      }
+
+      .contact-form textarea {
+        min-height: 140px;
+        resize: vertical;
+      }
+
+      .contact-form .btn-primary {
+        width: 100%;
+        text-align: center;
+      }
+
+      /* ============================================================
+           FOOTER
+           ============================================================ */
+      footer {
+        padding: 40px 60px;
+        text-align: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 40px;
+      }
+
+      .footer-social {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .footer-social .social-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+
+      .footer-logo {
+        font-family: "Playfair Display", serif;
+        font-size: 20px;
+        color: #d4af37;
+        margin-bottom: 8px;
+      }
+
+      .footer-logo span {
+        color: #ffffff;
+      }
+
+      footer p {
+        color: rgba(255, 255, 255, 0.25);
+        font-size: 13px;
+        margin-top: 6px;
+      }
+
+      footer p strong {
+        color: #d4af37;
+      }
+
+      /* ============================================================
+           RESPONSIVE DESIGN
+           ============================================================ */
+      @media (max-width: 1024px) {
+        .hero-container {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .hero-image {
+          flex: 0 0 220px;
+        }
+
+        .hero-image img {
+          width: 220px;
+          height: 220px;
+        }
+
+        .hero-content .tagline {
+          border-left: none;
+          padding-left: 0;
+        }
+
+        .hero-social {
+          justify-content: center;
+        }
+
+        .about-alex-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .about-spark-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .services-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .team-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .investment-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .clients-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .contact-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .values-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .navbar {
+          padding: 14px 24px;
+        }
+
+        section {
+          padding: 60px 24px;
+        }
+
+        .hero {
+          padding: 100px 24px 60px;
+        }
+
+        .hero-content h1 {
+          font-size: 36px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .menu-toggle {
+          display: flex;
+        }
+
+        .nav-links {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: 70%;
+          height: 100vh;
+          background: rgba(10, 15, 31, 0.98);
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 24px;
+          transition: right 0.4s ease;
+          backdrop-filter: blur(12px);
+        }
+
+        .nav-links.open {
+          right: 0;
+        }
+
+        .nav-links a {
+          font-size: 18px;
+        }
+
+        .services-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .team-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .investment-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .clients-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .values-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .about-spark-gallery {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .about-spark-gallery img:first-child {
+          grid-column: span 2;
+        }
+
+        .hero-content h1 {
+          font-size: 28px;
+        }
+
+        .hero-content .tagline {
+          font-size: 16px;
+        }
+
+        .hero-buttons {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+          width: 100%;
+          text-align: center;
+        }
+
+        footer {
+          padding: 30px 20px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .hero-image {
+          flex: 0 0 160px;
+        }
+
+        .hero-image img {
+          width: 160px;
+          height: 160px;
+        }
+
+        .section-title {
+          font-size: 28px;
+        }
+
+        .team-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .clients-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .values-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .about-spark-gallery {
+          grid-template-columns: 1fr;
+        }
+
+        .about-spark-gallery img:first-child {
+          grid-column: span 1;
+        }
+
+        .about-spark-gallery img {
+          height: 160px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============================================================
+    3D BACKGROUND
+    ============================================================ -->
+    <div id="three-canvas"></div>
+
+    <!-- ============================================================
+    NAVIGATION
+    ============================================================ -->
+    <nav class="navbar" id="navbar">
+      <a href="#home" class="logo">
+        <!-- REPLACE WITH SPARK LOGO -->
+        <img
+          src="https://via.placeholder.com/40x40/0A0F1F/D4AF37?text=✦"
+          alt="Spark Logo"
+        />
+        <span class="logo-text">Spark <span>AH</span></span>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home" class="active">Home</a></li>
+        <li><a href="#about-alex">About</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="#investment">Investment</a></li>
+        <li><a href="#clients">Clients</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </nav>
+
+    <!-- ============================================================
+    CONTENT WRAPPER
+    ============================================================ -->
+    <div class="content">
+      <!-- ============================================================
+        HERO SECTION
+        ============================================================ -->
+      <section class="hero" id="home">
+        <div class="hero-container">
+          <div class="hero-image">
+            <!-- REPLACE WITH ALEX'S HEADSHOT -->
+            <img
+              src="https://via.placeholder.com/340x340/1A2A4A/D4AF37?text=Alex+Ayalew"
+              alt="Alex Ayalew - CEO"
+              id="mainPhoto"
+            />
+          </div>
+
+          <div class="hero-content">
+            <div class="badge">✦ SPARK AH TRADING PLC</div>
+
+            <h1>Alex <span>Ayalew</span></h1>
+
+            <div class="tagline">"Sparking Knowledge &amp; Technology!"</div>
+
+            <div class="title">
+              <strong>CEO / General Manager</strong>
+              <br />
+              Spark AH Trading PLC
+            </div>
+
+            <div class="hero-buttons">
+              <a href="#contact" class="btn-primary">
+                <i class="fas fa-paper-plane" style="margin-right: 8px"></i> Get
+                in Touch
+              </a>
+              <a href="#services" class="btn-secondary">
+                <i class="fas fa-arrow-right" style="margin-right: 8px"></i>
+                Explore Services
+              </a>
+            </div>
+
+            <div class="hero-social">
+              <span class="social-label">Connect</span>
+              <span class="social-divider"></span>
+
+              <a
+                href="#"
+                target="_blank"
+                class="social-icon linkedin"
+                title="LinkedIn"
+              >
+                <i class="fa-brands fa-linkedin-in"></i>
+              </a>
+              <a
+                href="#"
+                target="_blank"
+                class="social-icon telegram"
+                title="Telegram"
+              >
+                <i class="fa-brands fa-telegram-plane"></i>
+              </a>
+              <a
+                href="#"
+                target="_blank"
+                class="social-icon facebook"
+                title="Facebook"
+              >
+                <i class="fa-brands fa-facebook-f"></i>
+              </a>
+              <a
+                href="mailto:alex.ayalew@sparktrade.net"
+                class="social-icon email"
+                title="Email"
+              >
+                <i class="fa-regular fa-envelope"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+        ABOUT ALEX
+        ============================================================ -->
+      <section id="about-alex">
+        <h2 class="section-title">About <span>Alex Ayalew</span></h2>
+        <p class="section-subtitle">A Leader Committed to Excellence</p>
+
+        <div class="about-alex-grid">
+          <div class="about-alex-text">
+            <h3>Who I Am</h3>
+
+            <p>
+              <span class="highlight">Alex Ayalew Mohammed</span> is the CEO and
+              General Manager of
+              <span class="highlight">Spark AH Trading PLC</span>, a dynamic
+              company dedicated to technology solutions, professional training,
+              and event management.
+            </p>
+
+            <p>
+              With a <span class="highlight">BSc in Economics</span> and a
+              <span class="highlight">Banking &amp; Finance Diploma</span>, Alex
+              brings over 20 years of experience across multiple industries,
+              including Banking, Education (General Wenget TVET), Agriculture,
+              and Hospitality.
+            </p>
+
+            <p>
+              His leadership philosophy is built on
+              <span class="highlight"
+                >integrity, innovation, and empowerment</span
+              >
+              – values that have guided Spark AH Trading PLC to become a trusted
+              partner for organizations across Ethiopia.
+            </p>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="number">20+</div>
+                <div class="label">Years Experience</div>
+              </div>
+              <div class="stat-item">
+                <div class="number">4</div>
+                <div class="label">Industries</div>
+              </div>
+              <div class="stat-item">
+                <div class="number">2016</div>
+                <div class="label">Company Founded</div>
+              </div>
+              <div class="stat-item">
+                <div class="number">50+</div>
+                <div class="label">Organizations Trained</div>
+              </div>
+            </div>
+
+            <!-- Expertise Tags -->
+            <div class="expertise-tags">
+              <span class="expertise-tag">Leadership &amp; Management</span>
+              <span class="expertise-tag">Banking &amp; Finance</span>
+              <span class="expertise-tag">TVET Training</span>
+              <span class="expertise-tag">Business Development</span>
+              <span class="expertise-tag">Event Coordination</span>
+            </div>
+          </div>
+
+          <div class="about-alex-image">
+            <!-- REPLACE WITH ALEX'S OFFICE PHOTO -->
+            <img
+              src="https://via.placeholder.com/600x400/1A2A4A/D4AF37?text=Alex+in+Office"
+              alt="Alex Ayalew in Office"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+        ABOUT SPARK
+        ============================================================ -->
+      <section id="about-spark">
+        <h2 class="section-title">About <span>Spark AH Trading PLC</span></h2>
+        <p class="section-subtitle">Sparking Knowledge &amp; Technology</p>
+
+        <div class="about-spark-grid">
+          <div class="about-spark-text">
+            <h3>Our <span>Company</span></h3>
+
+            <p>
+              <span class="highlight">Spark AH Trading PLC</span> is a legally
+              registered Ethiopian company established in
+              <span class="highlight">2016</span>, providing professional
+              services in technology solutions, capacity building, consultancy,
+              project implementation support, and professional training.
+            </p>
+
+            <p>
+              The company focuses on delivering
+              <span class="highlight"
+                >practical, innovative, and impact-driven</span
+              >
+              solutions that help organizations and individuals improve
+              performance, develop digital capacity, and achieve sustainable
+              growth.
+            </p>
+
+            <p>
+              <strong style="color: #d4af37">Mission:</strong> To empower
+              organizations and communities through knowledge, technology, and
+              professional development services.
+            </p>
+
+            <p>
+              <strong style="color: #d4af37">Vision:</strong> To be the leading
+              provider of technology-driven solutions and professional capacity
+              building in East Africa by 2035.
+            </p>
+
+            <!-- Core Values -->
+            <div class="values-grid">
+              <div class="value-item">
+                <div class="icon"><i class="fas fa-star"></i></div>
+                <div class="label">Excellence</div>
+              </div>
+              <div class="value-item">
+                <div class="icon"><i class="fas fa-lightbulb"></i></div>
+                <div class="label">Innovation</div>
+              </div>
+              <div class="value-item">
+                <div class="icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="label">Integrity</div>
+              </div>
+              <div class="value-item">
+                <div class="icon"><i class="fas fa-handshake"></i></div>
+                <div class="label">Collaboration</div>
+              </div>
+              <div class="value-item">
+                <div class="icon"><i class="fas fa-rocket"></i></div>
+                <div class="label">Empowerment</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <!-- Gallery -->
+            <div class="about-spark-gallery">
+              <!-- REPLACE WITH SPARK GROUP PHOTOS -->
+              <img
+                src="https://via.placeholder.com/600x200/1A2A4A/D4AF37?text=Group+Meeting+1"
+                alt="Group Meeting 1"
+              />
+              <img
+                src="https://via.placeholder.com/300x160/1A2A4A/D4AF37?text=Group+Meeting+2"
+                alt="Group Meeting 2"
+              />
+              <img
+                src="https://via.placeholder.com/300x160/1A2A4A/D4AF37?text=Group+Meeting+3"
+                alt="Group Meeting 3"
+              />
+              <img
+                src="https://via.placeholder.com/300x160/1A2A4A/D4AF37?text=Group+Meeting+4"
+                alt="Group Meeting 4"
+              />
+              <img
+                src="https://via.placeholder.com/300x160/1A2A4A/D4AF37?text=Group+Meeting+5"
+                alt="Group Meeting 5"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+        SERVICES
+        ============================================================ -->
+      <section id="services">
+        <h2 class="section-title">Our <span>Services</span></h2>
+        <p class="section-subtitle">
+          Comprehensive Solutions for Your Business
+        </p>
+
+        <div class="services-grid">
+          <div class="service-card glass-card">
+            <div class="icon"><i class="fas fa-laptop-code"></i></div>
+            <h4>Software Development</h4>
+            <p>
+              Custom software, websites, digital systems, and IT infrastructure
+              solutions.
+            </p>
+          </div>
+
+          <div class="service-card glass-card">
+            <div class="icon"><i class="fas fa-chalkboard-teacher"></i></div>
+            <h4>TVET Training</h4>
+            <p>
+              Digital literacy, leadership, entrepreneurship, youth &amp; women
+              empowerment programs.
+            </p>
+          </div>
+
+          <div class="service-card glass-card">
+            <div class="icon"><i class="fas fa-calendar-check"></i></div>
+            <h4>Event Organization</h4>
+            <p>
+              Corporate conferences, workshops, seminars, and professional event
+              coordination.
+            </p>
+          </div>
+
+          <div class="service-card glass-card">
+            <div class="icon"><i class="fas fa-handshake"></i></div>
+            <h4>Consultancy</h4>
+            <p>
+              Business development, project coordination, and institutional
+              reform support.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+        TEAM
+        ============================================================ -->
+      <section id="team">
+        <h2 class="section-title">Our <span>Team</span></h2>
+        <p class="section-subtitle">Meet the Collective of Experts</p>
+
+        <div class="team-grid">
+          <div class="team-card glass-card">
+            <!-- REPLACE WITH ALEX PHOTO -->
+            <img
+              src="https://via.placeholder.com/120x120/1A2A4A/D4AF37?text=Alex"
+              alt="Alex Ayalew"
+            />
+            <h4>Alex Ayalew</h4>
+            <div class="role">Founder / General Manager</div>
+          </div>
+
+          <div class="team-card glass-card">
+            <!-- REPLACE WITH MISKER PHOTO (or placeholder) -->
+            <img
+              src="https://via.placeholder.com/120x120/1A2A4A/D4AF37?text=Misker"
+              alt="Misker Solomon"
+            />
+            <h4>Misker Solomon</h4>
+            <div class="role">Lead Facilitator / Trainer</div>
+          </div>
+
+          <div class="team-card glass-card">
+            <!-- REPLACE WITH SAMUEL PHOTO (or placeholder) -->
+            <img
+              src="https://via.placeholder.com/120x120/1A2A4A/D4AF37?text=Samuel"
+              alt="Samuel Negussie"
+            />
+            <h4>Samuel Negussie</h4>
+            <div class="role">CEO</div>
+          </div>
+
+          <div class="team-card glass-card">
+            <!-- REPLACE WITH BILLY PHOTO (or placeholder) -->
+            <img
+              src="https://via.placeholder.com/120x120/1A2A4A/D4AF37?text=Billy"
+              alt="Billy James Otieno"
+            />
+            <h4>Billy James Otieno</h4>
+            <div class="role">Legal &amp; Compliance</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+        INVESTMENT
+        ============================================================ -->
+      <section id="investment">
+        <h2 class="section-title">Investment <span>Opportunities</span></h2>
+        <p class="section-subtitle">Be Part of the Spark Group Growth</p>
+
+        <div class="investment-grid">
+          <div class="investment-card glass-card">
+            <div class="icon"><i class="fas fa-building"></i></div>
+            <h4>Spark LTZ Trading PLC</h4>
+            <p>Par Value: <span class="highlight-number">200,000 Birr</span></p>
+            <p>Shares Available: <strong style="color: #d4af37">125</strong></p>
+            <p>Minimum Share: <strong style="color: #d4af37">1</strong></p>
+            <p style="font-size: 13px; margin-top: 8px">
+              Service Charge: 7% | Affiliate Commission: 2%
+            </p>
+          </div>
+
+          <div class="investment-card glass-card">
+            <div class="icon"><i class="fas fa-piggy-bank"></i></div>
+            <h4>Spark Credit &amp; Saving</h4>
+            <p><span style="color: #d4af37">Under Formation</span></p>
+            <p>
+              Registration Fee: <span class="highlight-number">1,500 Birr</span>
+            </p>
+            <p>1 Share = <span class="highlight-number">1,000 Birr</span></p>
+            <p>
+              Referral Commission:
+              <strong style="color: #d4af37">500 Birr</strong>
+            </p>
+            <p style="font-size: 13px; margin-top: 8px">
+              Unlimited shares available
+            </p>
+          </div>
+
+          <div class="investment-card glass-card">
+            <div class="icon"><i class="fas fa-globe-africa"></i></div>
+            <h4>Sparktrade.net</h4>
+            <p><span style="color: #d4af37">Global Platform</span></p>
+            <p>Nairobi Office (Licensed)</p>
+            <p>Share Sales in <strong style="color: #d4af37">USDT</strong></p>
+            <p style="font-size: 13px; margin-top: 8px">
+              Priority for community leaders
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+        CLIENTS
+        ============================================================ -->
+      <section id="clients">
+        <h2 class="section-title">Our <span>Clients</span></h2>
+        <p class="section-subtitle">Trusted by Leading Organizations</p>
+
+        <div class="clients-grid">
+          <div class="client-logo">
+            <div class="placeholder-logo">
+              <span class="icon"><i class="fas fa-building"></i></span>
+              Ethio Telecom
+            </div>
+          </div>
+          <div class="client-logo">
+            <div class="placeholder-logo">
+              <span class="icon"><i class="fas fa-university"></i></span>
+              Wegagen Bank
+            </div>
+          </div>
+          <div class="client-logo">
+            <div class="placeholder-logo">
+              <span class="icon"><i class="fas fa-bank"></i></span>
+              Commercial Bank of Ethiopia
+            </div>
+          </div>
+          <div class="client-logo">
+            <div class="placeholder-logo">
+              <span class="icon"><i class="fas fa-handshake"></i></span>
+              More Partners
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+        CONTACT
+        ============================================================ -->
+      <section id="contact">
+        <h2 class="section-title">Let's <span>Connect</span></h2>
+        <p class="section-subtitle">
+          Have a question or want to partner? Reach out.
+        </p>
+
+        <div class="contact-grid">
+          <div class="contact-info">
+            <h3>Get in Touch</h3>
+            <p>
+              We are always open to new opportunities, partnerships, and
+              conversations. Whether you need software, training, event
+              coordination, or investment advice, we are here to help.
+            </p>
+
+            <div class="contact-detail">
+              <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
+              <div class="text">
+                <strong>Location</strong><br />Nifas Silk-Lafto, Woreda 02,
+                Addis Ababa
+              </div>
+            </div>
+
+            <div class="contact-detail">
+              <div class="icon"><i class="fas fa-envelope"></i></div>
+              <div class="text">
+                <strong>Email</strong><br />alex.ayalew@sparktrade.net
+              </div>
+            </div>
+
+            <div class="contact-detail">
+              <div class="icon"><i class="fas fa-phone"></i></div>
+              <div class="text">
+                <strong>Phone</strong><br />+251 956 244 244 / +251 956 244 144
+              </div>
+            </div>
+
+            <div class="contact-social">
+              <a
+                href="#"
+                target="_blank"
+                class="social-icon linkedin"
+                title="LinkedIn"
+              >
+                <i class="fa-brands fa-linkedin-in"></i>
+              </a>
+              <a
+                href="#"
+                target="_blank"
+                class="social-icon telegram"
+                title="Telegram"
+              >
+                <i class="fa-brands fa-telegram-plane"></i>
+              </a>
+              <a
+                href="#"
+                target="_blank"
+                class="social-icon facebook"
+                title="Facebook"
+              >
+                <i class="fa-brands fa-facebook-f"></i>
+              </a>
+              <a
+                href="mailto:alex.ayalew@sparktrade.net"
+                class="social-icon email"
+                title="Email"
+              >
+                <i class="fa-regular fa-envelope"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- ===== CONTACT FORM ===== -->
+          <form
+            class="contact-form"
+            action="https://formsubmit.co/alex.ayalew@sparktrade.net"
+            method="POST"
+          >
+            <input type="text" name="_honey" style="display: none" />
+            <input type="hidden" name="_captcha" value="false" />
+            <input
+              type="hidden"
+              name="_autoresponse"
+              value="Thank you for reaching out! We will get back to you within 24 hours. - Spark AH Trading PLC"
+            />
+            <input
+              type="hidden"
+              name="_subject"
+              value="📩 New Message from Spark AH Trading PLC Website"
+            />
+
+            <input
+              type="text"
+              name="name"
+              placeholder="Your Full Name"
+              required
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Your Email Address"
+              required
+            />
+            <textarea
+              name="message"
+              placeholder="Tell us about your inquiry..."
+              required
+            ></textarea>
+
+            <button type="submit" class="btn-primary">
+              <i class="fas fa-paper-plane" style="margin-right: 8px"></i> Send
+              Message
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============================================================
+        FOOTER
+        ============================================================ -->
+      <footer>
+        <div class="footer-social">
+          <a
+            href="#"
+            target="_blank"
+            class="social-icon linkedin"
+            title="LinkedIn"
+          >
+            <i class="fa-brands fa-linkedin-in"></i>
+          </a>
+          <a
+            href="#"
+            target="_blank"
+            class="social-icon telegram"
+            title="Telegram"
+          >
+            <i class="fa-brands fa-telegram-plane"></i>
+          </a>
+          <a
+            href="#"
+            target="_blank"
+            class="social-icon facebook"
+            title="Facebook"
+          >
+            <i class="fa-brands fa-facebook-f"></i>
+          </a>
+          <a
+            href="mailto:alex.ayalew@sparktrade.net"
+            class="social-icon email"
+            title="Email"
+          >
+            <i class="fa-regular fa-envelope"></i>
+          </a>
+        </div>
+
+        <div class="footer-logo">Spark <span>AH</span></div>
+
+        <p>
+          &copy; 2026 Spark AH Trading PLC. All rights reserved.
+          <br />
+          Developed by <strong>Tsion Taye</strong> | SheCodes
+        </p>
+      </footer>
+    </div>
+
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+    <script>
+      // ============================================================
+      // 1. THREE.JS 3D BACKGROUND (Gold + Navy Particles)
+      // ============================================================
+      (function () {
+        const canvas = document.getElementById("three-canvas");
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(
+          75,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          1000,
+        );
+        const renderer = new THREE.WebGLRenderer({
+          alpha: true,
+          antialias: true,
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        canvas.appendChild(renderer.domElement);
+
+        // Particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const count = 1200;
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+
+        const navyColor = new THREE.Color("#0F1A30");
+        const goldColor = new THREE.Color("#D4AF37");
+
+        for (let i = 0; i < count; i++) {
+          positions[i * 3] = (Math.random() - 0.5) * 50;
+          positions[i * 3 + 1] = (Math.random() - 0.5) * 50;
+          positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
+
+          // Mix navy and gold
+          const mix = Math.random() > 0.6 ? 1 : 0;
+          const color = mix === 1 ? goldColor : navyColor;
+          colors[i * 3] = color.r;
+          colors[i * 3 + 1] = color.g;
+          colors[i * 3 + 2] = color.b;
+        }
+
+        particlesGeometry.setAttribute(
+          "position",
+          new THREE.BufferAttribute(positions, 3),
+        );
+        particlesGeometry.setAttribute(
+          "color",
+          new THREE.BufferAttribute(colors, 3),
+        );
+
+        const particlesMaterial = new THREE.PointsMaterial({
+          size: 0.08,
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.6,
+          blending: THREE.AdditiveBlending,
+        });
+
+        const particlesMesh = new THREE.Points(
+          particlesGeometry,
+          particlesMaterial,
+        );
+        scene.add(particlesMesh);
+
+        camera.position.z = 15;
+
+        let mouseX = 0;
+        let mouseY = 0;
+
+        document.addEventListener("mousemove", (event) => {
+          mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+          mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        function animate() {
+          requestAnimationFrame(animate);
+
+          particlesMesh.rotation.x += 0.0002;
+          particlesMesh.rotation.y += 0.0004;
+
+          particlesMesh.rotation.x +=
+            (mouseY * 0.02 - particlesMesh.rotation.x) * 0.01;
+          particlesMesh.rotation.y +=
+            (mouseX * 0.02 - particlesMesh.rotation.y) * 0.01;
+
+          renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener("resize", () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+      })();
+
+      // ============================================================
+      // 2. MOBILE MENU TOGGLE
+      // ============================================================
+      const menuToggle = document.getElementById("menuToggle");
+      const navLinks = document.getElementById("navLinks");
+
+      menuToggle.addEventListener("click", () => {
+        menuToggle.classList.toggle("active");
+        navLinks.classList.toggle("open");
+      });
+
+      document.querySelectorAll(".nav-links a").forEach((link) => {
+        link.addEventListener("click", () => {
+          menuToggle.classList.remove("active");
+          navLinks.classList.remove("open");
+        });
+      });
+
+      // ============================================================
+      // 3. NAVBAR SCROLL EFFECT
+      // ============================================================
+      const navbar = document.getElementById("navbar");
+
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 50) {
+          navbar.classList.add("scrolled");
+        } else {
+          navbar.classList.remove("scrolled");
+        }
+      });
+
+      // ============================================================
+      // 4. ACTIVE NAV LINK ON SCROLL
+      // ============================================================
+      const sections = document.querySelectorAll("section[id]");
+      const navLinksAll = document.querySelectorAll(".nav-links a");
+
+      window.addEventListener("scroll", () => {
+        let current = "home";
+        sections.forEach((section) => {
+          const sectionTop = section.offsetTop - 120;
+          if (window.scrollY >= sectionTop) {
+            current = section.getAttribute("id");
+          }
+        });
+        navLinksAll.forEach((link) => {
+          link.classList.remove("active");
+          if (link.getAttribute("href") === `#${current}`) {
+            link.classList.add("active");
+          }
+        });
+      });
+
+      // ============================================================
+      // 5. SMOOTH SCROLL
+      // ============================================================
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }
+        });
+      });
+
+      console.log("🚀 Spark AH Trading PLC Website Loaded Successfully!");
+      console.log("✨ Developed by Tsion Taye | SheCodes");
+      console.log("🏢 Alex Ayalew - CEO, Spark AH Trading PLC");
+    </script>
+  </body>
+</html>
